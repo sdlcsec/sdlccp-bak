@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PackageDetails",
+  "type": "object",
+  "required": [
+    "artifact_hash",
+    "artifact_url"
+  ],
+  "properties": {
+    "artifact_hash": {
+      "type": "string"
+    },
+    "artifact_url": {
+      "type": "string"
+    }
+  }
+}

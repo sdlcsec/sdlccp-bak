@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PolicyCheckFailed",
+  "type": "object",
+  "required": [
+    "failed_at",
+    "reason"
+  ],
+  "properties": {
+    "failed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reason": {
+      "type": "string"
+    }
+  }
+}

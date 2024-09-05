@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BuildDetails",
+  "type": "object",
+  "required": [
+    "build_id",
+    "build_timestamp"
+  ],
+  "properties": {
+    "build_id": {
+      "type": "string"
+    },
+    "build_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

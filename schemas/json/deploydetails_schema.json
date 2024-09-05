@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DeployDetails",
+  "type": "object",
+  "required": [
+    "deployment_id",
+    "environment"
+  ],
+  "properties": {
+    "deployment_id": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    }
+  }
+}

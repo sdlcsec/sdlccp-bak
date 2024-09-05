@@ -1,0 +1,16 @@
+[package]
+name = "sdlc-cp-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = "0.1.82"
+chrono = { version = "0.4.38", features = ["serde"] }
+schemars = { version = "0.8.21", features = ["chrono", "url", "uuid", "uuid1"] }
+serde = { version = "1.0.209", features = ["derive"] }
+serde_json = "1.0.128"
+thiserror = "1.0.63"
+tokio = { version = "1.40.0", features = ["sync"] }
+uuid = { version = "1.10.0", features = ["serde", "v4"] }
+sdlc-cp-api-macro = { path = "./sdlc-cp-api-macro" }
+inventory = "0.3.15"
