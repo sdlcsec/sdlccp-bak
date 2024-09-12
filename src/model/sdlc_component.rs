@@ -2,15 +2,17 @@ use std::collections::HashMap;
 
 use schemars::JsonSchema;
 use sdlc_cp_api_macro::RegisterSchema;
+use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, JsonSchema, RegisterSchema)]
+#[derive(Debug, Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub enum SDLCComponent {
     Project(Project),   
     Unmanaged(Unmanaged),
 }
 
-#[derive(Debug, Clone, JsonSchema)]
+#[derive(Debug, Clone, JsonSchema, ToSchema, Serialize, Deserialize)]
 pub struct Unmanaged {
     pub id: Uuid,
     pub name: String,
@@ -19,7 +21,7 @@ pub struct Unmanaged {
     pub metadata: HashMap<String, String>,
 }
 
-#[derive(Debug, Clone, JsonSchema)]
+#[derive(Debug, Clone, JsonSchema, ToSchema, Serialize, Deserialize)]
 pub struct Project {
     pub id: Uuid,
     pub name: String,

@@ -3,7 +3,6 @@
   "title": "SDLCRelease_for_Development_and_PolicyCheckFailed",
   "type": "object",
   "required": [
-    "_phase",
     "component",
     "created_at",
     "created_by",
@@ -14,9 +13,6 @@
     "version"
   ],
   "properties": {
-    "_phase": {
-      "type": "null"
-    },
     "commit_hash": {
       "type": [
         "string",

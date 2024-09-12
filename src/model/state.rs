@@ -1,54 +1,57 @@
 use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
 use sdlc_cp_api_macro::RegisterSchema;
+use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use super::policy::VulnerabilityLevel;
 
-pub trait ReleaseState: Clone {
+pub trait ReleaseState: Clone + Serialize + for<'de> Deserialize<'de>
+{
     fn name() -> &'static str;
     fn new() -> Self;
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct Draft;
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct InProgress {
     pub started_by: String,
     pub started_at: DateTime<Utc>,
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct PolicyCheckPending {
     pub initiated_at: DateTime<Utc>,
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct PolicyCheckFailed {
     pub failed_at: DateTime<Utc>,
     pub reason: String,
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct Releasable {
     pub approved_at: DateTime<Utc>,
     pub approved_by: String,
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct Released {
     pub release_time: DateTime<Utc>,
     pub release_notes: String,
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct Deployed {
     pub deployment_time: DateTime<Utc>,
     pub environment: String,
     pub vulnerabilities: Vec<Vulnerability>,
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct Vulnerability {
     pub id: String,
     pub severity: VulnerabilityLevel,
@@ -56,7 +59,7 @@ pub struct Vulnerability {
     pub discovered_at: DateTime<Utc>,
 }
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema, Serialize, Deserialize)]
 pub struct Revoked {
     pub revocation_time: DateTime<Utc>,
     pub reason: String,

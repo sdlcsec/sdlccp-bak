@@ -1,0 +1,902 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "sdlc-cp-api",
+    "description": "",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/attestations": {
+      "post": {
+        "tags": [
+          "attestations"
+        ],
+        "operationId": "create_attestation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Attestation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Attestation created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attestation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid attestation data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttestationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attestations/{id}": {
+      "get": {
+        "tags": [
+          "attestations"
+        ],
+        "operationId": "get_attestation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Attestation ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attestation found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attestation"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Attestation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttestationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/components/{id}/policies": {
+      "get": {
+        "tags": [
+          "policies"
+        ],
+        "operationId": "get_policies_for_component",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Component ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policies found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Policy"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Component not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyRepositoryError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policies": {
+      "post": {
+        "tags": [
+          "policies"
+        ],
+        "operationId": "create_policy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Policy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Policy created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid policy data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyRepositoryError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policies/{id}": {
+      "get": {
+        "tags": [
+          "policies"
+        ],
+        "operationId": "get_policy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Policy ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policy found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Policy"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Policy not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyRepositoryError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/{id}/attestations": {
+      "get": {
+        "tags": [
+          "releases"
+        ],
+        "operationId": "get_attestations_for_release",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Release ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attestations found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Attestation"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Release not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttestationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/releases/{release_id}/apply-policy/{policy_id}": {
+      "post": {
+        "tags": [
+          "releases"
+        ],
+        "operationId": "apply_policy_to_release",
+        "parameters": [
+          {
+            "name": "release_id",
+            "in": "path",
+            "description": "Release ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "policy_id",
+            "in": "path",
+            "description": "Policy ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policy applied successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid policy or release data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlPlaneError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Release or policy not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlPlaneError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Attestation": {
+        "type": "object",
+        "required": [
+          "id",
+          "subject",
+          "timestamp",
+          "signatures",
+          "claims",
+          "parent_attestations"
+        ],
+        "properties": {
+          "claims": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "expiration": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parent_attestations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Signature"
+            }
+          },
+          "subject": {
+            "$ref": "#/components/schemas/Subject"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AttestationError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "StorageError"
+            ],
+            "properties": {
+              "StorageError": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "RetrievalError"
+            ],
+            "properties": {
+              "RetrievalError": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "VerificationError"
+            ],
+            "properties": {
+              "VerificationError": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "ControlPlaneError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "PolicyRepositoryError"
+            ],
+            "properties": {
+              "PolicyRepositoryError": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "AttestationStorageError"
+            ],
+            "properties": {
+              "AttestationStorageError": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "string",
+            "enum": [
+              "NoPolicyFound"
+            ]
+          }
+        ]
+      },
+      "Deployed": {
+        "type": "object",
+        "required": [
+          "deployment_time",
+          "environment",
+          "vulnerabilities"
+        ],
+        "properties": {
+          "deployment_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "vulnerabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Vulnerability"
+            }
+          }
+        }
+      },
+      "Draft": {
+        "default": null,
+        "nullable": true
+      },
+      "InProgress": {
+        "type": "object",
+        "required": [
+          "started_by",
+          "started_at"
+        ],
+        "properties": {
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "started_by": {
+            "type": "string"
+          }
+        }
+      },
+      "Policy": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "rules",
+          "parent_policies",
+          "applies_to"
+        ],
+        "properties": {
+          "applies_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_policies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyRule"
+            }
+          }
+        }
+      },
+      "PolicyCheckFailed": {
+        "type": "object",
+        "required": [
+          "failed_at",
+          "reason"
+        ],
+        "properties": {
+          "failed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "PolicyCheckPending": {
+        "type": "object",
+        "required": [
+          "initiated_at"
+        ],
+        "properties": {
+          "initiated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PolicyRepositoryError": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "StorageError"
+            ],
+            "properties": {
+              "StorageError": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "RetrievalError"
+            ],
+            "properties": {
+              "RetrievalError": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "PolicyRule": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "MaxAge"
+            ],
+            "properties": {
+              "MaxAge": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "ApprovedIdentities"
+            ],
+            "properties": {
+              "ApprovedIdentities": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "RequiredClaims"
+            ],
+            "properties": {
+              "RequiredClaims": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "VulnerabilityThreshold"
+            ],
+            "properties": {
+              "VulnerabilityThreshold": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                },
+                "description": "",
+                "maxItems": 2,
+                "minItems": 2
+              }
+            }
+          }
+        ]
+      },
+      "Project": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "components"
+        ],
+        "properties": {
+          "components": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SDLCComponent"
+            }
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string",
+            "nullable": true
+          },
+          "repository_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Releasable": {
+        "type": "object",
+        "required": [
+          "approved_at",
+          "approved_by"
+        ],
+        "properties": {
+          "approved_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "approved_by": {
+            "type": "string"
+          }
+        }
+      },
+      "Released": {
+        "type": "object",
+        "required": [
+          "release_time",
+          "release_notes"
+        ],
+        "properties": {
+          "release_notes": {
+            "type": "string"
+          },
+          "release_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SDLCComponent": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "Project"
+            ],
+            "properties": {
+              "Project": {
+                "$ref": "#/components/schemas/Project"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "Unmanaged"
+            ],
+            "properties": {
+              "Unmanaged": {
+                "$ref": "#/components/schemas/Unmanaged"
+              }
+            }
+          }
+        ]
+      },
+      "SDLCRelease": {
+        "type": "object",
+        "required": [
+          "id",
+          "component",
+          "version",
+          "created_by",
+          "created_at",
+          "dependencies",
+          "phase_attestations",
+          "state_info"
+        ],
+        "properties": {
+          "commit_hash": {
+            "type": "string",
+            "nullable": true
+          },
+          "component": {
+            "$ref": "#/components/schemas/SDLCComponent"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phase_attestations": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "state_info": {
+            "type": "object"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "Signature": {
+        "type": "object",
+        "required": [
+          "signer",
+          "signature"
+        ],
+        "properties": {
+          "signature": {
+            "type": "string"
+          },
+          "signer": {
+            "type": "string"
+          }
+        }
+      },
+      "Subject": {
+        "type": "object",
+        "required": [
+          "type_",
+          "name",
+          "digest"
+        ],
+        "properties": {
+          "digest": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type_": {
+            "$ref": "#/components/schemas/SubjectType"
+          }
+        }
+      },
+      "SubjectType": {
+        "type": "string",
+        "enum": [
+          "Commit",
+          "Artifact",
+          "Deployment"
+        ]
+      },
+      "Unmanaged": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "metadata"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "package_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "repository_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Vulnerability": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "description",
+          "discovered_at"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "discovered_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/VulnerabilityLevel"
+          }
+        }
+      },
+      "VulnerabilityLevel": {
+        "type": "string",
+        "enum": [
+          "Low",
+          "Medium",
+          "High",
+          "Critical"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "policies",
+      "description": "Policy management endpoints"
+    },
+    {
+      "name": "attestations",
+      "description": "Attestation management endpoints"
+    },
+    {
+      "name": "releases",
+      "description": "Release management endpoints"
+    }
+  ]
+}

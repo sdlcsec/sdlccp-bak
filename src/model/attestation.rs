@@ -1,10 +1,11 @@
 use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
 use sdlc_cp_api_macro::RegisterSchema;
+use utoipa::ToSchema;
 use uuid::Uuid;
 use std::collections::HashMap;
 
-#[derive(Clone, JsonSchema, RegisterSchema)]
+#[derive(Clone, JsonSchema, RegisterSchema, ToSchema)]
 pub struct Attestation {
     pub id: Uuid,
     pub subject: Subject,
@@ -15,21 +16,21 @@ pub struct Attestation {
     pub parent_attestations: Vec<String>, // TODO: This is currently IDs of parent attestations. Should this be a Vec<Uuid>, should this be some other way of referencing?
 }
 
-#[derive(Clone, JsonSchema)]
+#[derive(Clone, JsonSchema, ToSchema)]
 pub struct Subject {
     pub type_: SubjectType,
     pub name: String,
     pub digest: String,
 }
 
-#[derive(Clone, JsonSchema)]
+#[derive(Clone, JsonSchema, ToSchema)]
 pub enum SubjectType {
     Commit,
     Artifact,
     Deployment,
 }
 
-#[derive(Clone, JsonSchema)]
+#[derive(Clone, JsonSchema, ToSchema)]
 pub struct Signature {
     pub signer: String,
     pub signature: String,

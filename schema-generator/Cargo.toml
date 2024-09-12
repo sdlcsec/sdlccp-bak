@@ -8,3 +8,4 @@ inventory = "0.3.15"
 schemars = "0.8.21"
 sdlc-cp-api = { path = ".." }
 serde_json = "1.0.128"
+utoipa = { version = "4.2.3" }

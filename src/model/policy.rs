@@ -3,8 +3,10 @@ use std::collections::HashMap;
 
 use schemars::JsonSchema;
 use sdlc_cp_api_macro::RegisterSchema;
+use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Clone, JsonSchema, RegisterSchema)]
+#[derive(Debug, Clone, JsonSchema, RegisterSchema, ToSchema)]
 pub struct Policy {
     pub id: String,
     pub name: String,
@@ -13,7 +15,7 @@ pub struct Policy {
     pub applies_to: Vec<String>, // Todo: This currently is Phase names this policy applies to. Should this be a Vec<Phase>? Should this be some other way of referencing?
 }
 
-#[derive(Debug, Clone, JsonSchema)]
+#[derive(Debug, Clone, JsonSchema, ToSchema)]
 pub enum PolicyRule {
     MaxAge(Duration),
     ApprovedIdentities(Vec<String>),
@@ -21,7 +23,7 @@ pub enum PolicyRule {
     VulnerabilityThreshold(VulnerabilityLevel, u32),
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, JsonSchema, ToSchema, Serialize, Deserialize)]
 pub enum VulnerabilityLevel {
     Low,
     Medium,

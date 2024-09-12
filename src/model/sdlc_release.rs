@@ -3,11 +3,14 @@ use super::phase::{self, SDLCPhase};
 use super::state::{self, ReleaseState};
 use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, JsonSchema)]
+#[derive(Debug, Clone, JsonSchema, ToSchema, Serialize, Deserialize)]
+#[serde(bound = "State: Serialize + for<'des> Deserialize<'des>")]
 pub struct SDLCRelease<Phase: SDLCPhase, State: ReleaseState> {
     pub id: Uuid,
     pub component: SDLCComponent,
@@ -17,7 +20,9 @@ pub struct SDLCRelease<Phase: SDLCPhase, State: ReleaseState> {
     pub commit_hash: Option<String>,
     pub dependencies: Vec<Uuid>, // IDs of dependent releases
     pub phase_attestations: HashMap<String, Uuid>, // Todo: this is currently Phase name to attestation ID. Should this be a HashMap<Phase, Uuid>?
+    #[schema(value_type = Object)]
     pub state_info: State,
+    #[serde(skip)]
     pub(crate) _phase: PhantomData<Phase>,
 }
 

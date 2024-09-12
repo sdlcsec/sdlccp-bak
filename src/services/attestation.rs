@@ -1,3 +1,5 @@
+use schemars::JsonSchema;
+use utoipa::ToSchema;
 use uuid::Uuid;
 use crate::model::attestation::Attestation;
 use async_trait::async_trait;
@@ -13,7 +15,7 @@ pub trait AttestationService: Send + Sync {
     async fn verify_attestation(&self, attestation: &Attestation) -> Result<bool, AttestationError>;
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, JsonSchema, ToSchema)]
 pub enum AttestationError {
     #[error("Failed to store attestation: {0}")]
     StorageError(String),
