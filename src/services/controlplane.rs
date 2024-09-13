@@ -3,7 +3,7 @@ use utoipa::{OpenApi, ToSchema};
 use uuid::Uuid;
 
 use crate::model::{
-    attestation::{Signature, Subject, SubjectType}, phase, policy::{Policy, PolicyRule, VulnerabilityLevel}, sdlc_component::{Project, SDLCComponent, Unmanaged}, state, Attestation, SDLCRelease
+    attestation::{Signature, Subject, SubjectType}, phase::{BuildDetails, DeployDetails, DevelopmentDetails, PackageDetails, PhaseDetails, RuntimeDetails, SourceDetails}, policy::{Policy, PolicyRule, Vulnerability, VulnerabilityLevel}, sdlc_component::{Project, SDLCComponent, Unmanaged}, Attestation, ReleaseState, SDLCPhase, SDLCRelease
 };
 
 use super::{attestation::AttestationError, policy_repository::PolicyRepositoryError};
@@ -23,29 +23,8 @@ use super::{attestation::AttestationError, policy_repository::PolicyRepositoryEr
         SDLCComponent,
         Project,
         Unmanaged,
-        SDLCRelease<phase::Development, state::Draft>,
-        SDLCRelease<phase::Development, state::PolicyCheckPending>,
-        SDLCRelease<phase::Development, state::PolicyCheckFailed>,
-        SDLCRelease<phase::Source, state::Draft>,
-        SDLCRelease<phase::Source, state::PolicyCheckPending>,
-        SDLCRelease<phase::Source, state::PolicyCheckFailed>,
-        SDLCRelease<phase::Build, state::Draft>,
-        SDLCRelease<phase::Build, state::PolicyCheckPending>,
-        SDLCRelease<phase::Build, state::PolicyCheckFailed>,
-        SDLCRelease<phase::Package, state::Draft>,
-        SDLCRelease<phase::Package, state::PolicyCheckPending>,
-        SDLCRelease<phase::Package, state::PolicyCheckFailed>,
-        SDLCRelease<phase::Deploy, state::Draft>,
-        SDLCRelease<phase::Deploy, state::PolicyCheckPending>,
-        SDLCRelease<phase::Deploy, state::PolicyCheckFailed>,
-        state::Draft,
-        state::InProgress,
-        state::PolicyCheckPending,
-        state::PolicyCheckFailed,
-        state::Releasable,
-        state::Released,
-        state::Deployed,
-        state::Vulnerability,
+        SDLCRelease,
+        ReleaseState,
         VulnerabilityLevel,
         Attestation,
         AttestationError,
@@ -56,6 +35,15 @@ use super::{attestation::AttestationError, policy_repository::PolicyRepositoryEr
         SubjectType,
         PolicyRule,
         ControlPlaneError,
+        SDLCPhase,
+        PhaseDetails,
+        RuntimeDetails,
+        SourceDetails,
+        DevelopmentDetails,
+        DeployDetails,
+        BuildDetails,
+        PackageDetails,
+        Vulnerability,
     )),
     tags(
         (name = "policies", description = "Policy management endpoints"),

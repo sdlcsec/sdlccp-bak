@@ -1,0 +1,203 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PhaseDetails",
+  "type": "object",
+  "required": [
+    "custom_details"
+  ],
+  "properties": {
+    "build_details": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/BuildDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "custom_details": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "deploy_details": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DeployDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "development_details": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DevelopmentDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "package_details": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PackageDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "runtime_details": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/RuntimeDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source_details": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/SourceDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "BuildDetails": {
+      "type": "object",
+      "required": [
+        "build_id",
+        "build_timestamp"
+      ],
+      "properties": {
+        "build_id": {
+          "type": "string"
+        },
+        "build_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "DeployDetails": {
+      "type": "object",
+      "required": [
+        "deployment_id",
+        "environment"
+      ],
+      "properties": {
+        "deployment_id": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        }
+      }
+    },
+    "DevelopmentDetails": {
+      "type": "object",
+      "required": [
+        "feature_list"
+      ],
+      "properties": {
+        "feature_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PackageDetails": {
+      "type": "object",
+      "required": [
+        "artifact_hash",
+        "artifact_url"
+      ],
+      "properties": {
+        "artifact_hash": {
+          "type": "string"
+        },
+        "artifact_url": {
+          "type": "string"
+        }
+      }
+    },
+    "RuntimeDetails": {
+      "type": "object",
+      "required": [
+        "last_heartbeat",
+        "runtime_id",
+        "vulnerabilities"
+      ],
+      "properties": {
+        "last_heartbeat": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "runtime_id": {
+          "type": "string"
+        },
+        "vulnerabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Vulnerability"
+          }
+        }
+      }
+    },
+    "SourceDetails": {
+      "type": "object",
+      "required": [
+        "commit_hash"
+      ],
+      "properties": {
+        "commit_hash": {
+          "type": "string"
+        }
+      }
+    },
+    "Vulnerability": {
+      "type": "object",
+      "required": [
+        "description",
+        "discovered_at",
+        "id",
+        "severity"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "discovered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/definitions/VulnerabilityLevel"
+        }
+      }
+    },
+    "VulnerabilityLevel": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ]
+    }
+  }
+}

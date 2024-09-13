@@ -1,17 +1,16 @@
 use super::sdlc_component::SDLCComponent;
-use super::phase::{self, SDLCPhase};
-use super::state::{self, ReleaseState};
+use super::phase::{BuildDetails, DeployDetails, DevelopmentDetails, PackageDetails, PhaseDetails, SDLCPhase, SourceDetails};
+use super::state::ReleaseState;
 use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
+use sdlc_cp_api_macro::RegisterSchema;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use std::collections::HashMap;
-use std::marker::PhantomData;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, JsonSchema, ToSchema, Serialize, Deserialize)]
-#[serde(bound = "State: Serialize + for<'des> Deserialize<'des>")]
-pub struct SDLCRelease<Phase: SDLCPhase, State: ReleaseState> {
+#[derive(Debug, Clone, JsonSchema, ToSchema, Serialize, Deserialize, RegisterSchema)]
+pub struct SDLCRelease {
     pub id: Uuid,
     pub component: SDLCComponent,
     pub version: String,
@@ -21,11 +20,263 @@ pub struct SDLCRelease<Phase: SDLCPhase, State: ReleaseState> {
     pub dependencies: Vec<Uuid>, // IDs of dependent releases
     pub phase_attestations: HashMap<String, Uuid>, // Todo: this is currently Phase name to attestation ID. Should this be a HashMap<Phase, Uuid>?
     #[schema(value_type = Object)]
-    pub state_info: State,
-    #[serde(skip)]
-    pub(crate) _phase: PhantomData<Phase>,
+    pub state: ReleaseState,
+    pub phase: SDLCPhase,
+    pub phase_details: Option<PhaseDetails>,
 }
 
+impl SDLCRelease {
+    /// Creates a new SDLCRelease in the Development phase with Draft state.
+    pub fn new(component: SDLCComponent, version: String, created_by: String) -> Self {
+        SDLCRelease {
+            id: Uuid::new_v4(),
+            component,
+            version,
+            created_by,
+            created_at: Utc::now(),
+            commit_hash: None,
+            dependencies: Vec::new(),
+            phase_attestations: HashMap::new(),
+            phase: SDLCPhase::Development,
+            state: ReleaseState::Draft,
+            phase_details: Some(PhaseDetails::new()),
+        }
+    }
+
+    // Helper methods
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    pub fn version(&self) -> &str {
+        &self.version
+    }
+
+    pub fn phase_name(&self) -> &str {
+        self.phase.name()
+    }
+
+    pub fn state_name(&self) -> &str {
+        self.state.name()
+    }
+
+    pub fn component_name(&self) -> &str {
+        &self.component.name()
+    }
+
+    pub fn add_dependency(&mut self, dependency_id: Uuid) {
+        self.dependencies.push(dependency_id);
+    }
+
+    pub fn add_phase_attestation(&mut self, phase_name: String, attestation_id: Uuid) {
+        self.phase_attestations.insert(phase_name, attestation_id);
+    }
+
+    /// Starts the Development phase.
+    pub fn start_development(&mut self, started_by: String, feature_list: Vec<String>) -> Result<(), String> {
+        if self.phase == SDLCPhase::Development && matches!(self.state, ReleaseState::Draft) {
+            self.state = ReleaseState::InProgress {
+                started_by,
+                started_at: Utc::now(),
+            };
+            if let Some(details) = &mut self.phase_details {
+                details.development_details = Some(DevelopmentDetails { feature_list });
+            }
+            Ok(())
+        } else {
+            Err("Cannot start development in the current phase and state.".to_string())
+        }
+    }
+
+    /// Completes the Development phase.
+    pub fn complete_development(&mut self) -> Result<(), String> {
+        if self.phase == SDLCPhase::Development && matches!(self.state, ReleaseState::InProgress { .. }) {
+            self.phase = SDLCPhase::Source;
+            self.state = ReleaseState::Draft;
+            if let Some(details) = &mut self.phase_details {
+                details.development_details = None;
+                details.source_details = None;
+            }
+            Ok(())
+        } else {
+            Err("Cannot complete development in the current phase and state.".to_string())
+        }
+    }
+
+    /// Starts the Source Review phase.
+    pub fn start_source_review(&mut self, started_by: String) -> Result<(), String> {
+        if self.phase == SDLCPhase::Source && matches!(self.state, ReleaseState::Draft) {
+            self.state = ReleaseState::InProgress {
+                started_by,
+                started_at: Utc::now(),
+            };
+            Ok(())
+        } else {
+            Err("Cannot start source review in the current phase and state.".to_string())
+        }
+    }
+
+    /// Completes the Source Review phase.
+    pub fn complete_source_review(&mut self, commit_hash: String) -> Result<(), String> {
+        if self.phase == SDLCPhase::Source && matches!(self.state, ReleaseState::InProgress { .. }) {
+            self.commit_hash = Some(commit_hash.clone());
+            if let Some(details) = &mut self.phase_details {
+                details.source_details = Some(SourceDetails { commit_hash });
+            }
+            self.phase = SDLCPhase::Build;
+            self.state = ReleaseState::Draft;
+            Ok(())
+        } else {
+            Err("Cannot complete source review in the current phase and state.".to_string())
+        }
+    }
+
+    // Implement other phase transitions similarly
+
+    /// Starts the Build phase.
+    pub fn start_build(&mut self, started_by: String) -> Result<(), String> {
+        if self.phase == SDLCPhase::Build && matches!(self.state, ReleaseState::Draft) {
+            self.state = ReleaseState::InProgress {
+                started_by,
+                started_at: Utc::now(),
+            };
+            Ok(())
+        } else {
+            Err("Cannot start build in the current phase and state.".to_string())
+        }
+    }
+
+    /// Completes the Build phase.
+    pub fn complete_build(&mut self, build_id: String) -> Result<(), String> {
+        if self.phase == SDLCPhase::Build && matches!(self.state, ReleaseState::InProgress { .. }) {
+            if let Some(details) = &mut self.phase_details {
+                details.build_details = Some(BuildDetails {
+                    build_id,
+                    build_timestamp: Utc::now(),
+                });
+            }
+            self.phase = SDLCPhase::Package;
+            self.state = ReleaseState::Draft;
+            Ok(())
+        } else {
+            Err("Cannot complete build in the current phase and state.".to_string())
+        }
+    }
+
+    /// Starts the Packaging phase.
+    pub fn start_packaging(&mut self, started_by: String) -> Result<(), String> {
+        if self.phase == SDLCPhase::Package && matches!(self.state, ReleaseState::Draft) {
+            self.state = ReleaseState::InProgress {
+                started_by,
+                started_at: Utc::now(),
+            };
+            Ok(())
+        } else {
+            Err("Cannot start packaging in the current phase and state.".to_string())
+        }
+    }
+
+    /// Completes the Packaging phase.
+    pub fn complete_packaging(&mut self, artifact_hash: String, artifact_url: String) -> Result<(), String> {
+        if self.phase == SDLCPhase::Package && matches!(self.state, ReleaseState::InProgress { .. }) {
+            if let Some(details) = &mut self.phase_details {
+                details.package_details = Some(PackageDetails {
+                    artifact_hash,
+                    artifact_url,
+                });
+            }
+            self.phase = SDLCPhase::Deploy;
+            self.state = ReleaseState::Releasable {
+                approved_by: "Auto-Approved".to_string(),
+                approved_at: Utc::now(),
+            };
+            Ok(())
+        } else {
+            Err("Cannot complete packaging in the current phase and state.".to_string())
+        }
+    }
+
+    /// Releases the package.
+    pub fn release(&mut self, release_notes: String) -> Result<(), String> {
+        if matches!(self.state, ReleaseState::Releasable { .. }) {
+            self.state = ReleaseState::Released {
+                release_notes,
+                release_time: Utc::now(),
+            };
+            Ok(())
+        } else {
+            Err("Cannot release in the current state.".to_string())
+        }
+    }
+
+    /// Starts the Deployment phase.
+    pub fn start_deployment(&mut self, environment: String) -> Result<(), String> {
+        if self.phase == SDLCPhase::Deploy && matches!(self.state, ReleaseState::Released { .. }) {
+            self.state = ReleaseState::InProgress {
+                started_by: "Deployment System".to_string(),
+                started_at: Utc::now(),
+            };
+            if let Some(details) = &mut self.phase_details {
+                details.deploy_details = Some(DeployDetails {
+                    deployment_id: Uuid::new_v4().to_string(),
+                    environment: environment.clone(),
+                });
+            }
+            Ok(())
+        } else {
+            Err("Cannot start deployment in the current phase and state.".to_string())
+        }
+    }
+
+    /// Completes the Deployment phase.
+    pub fn complete_deployment(&mut self) -> Result<(), String> {
+        if self.phase == SDLCPhase::Deploy && matches!(self.state, ReleaseState::InProgress { .. }) {
+            self.phase = SDLCPhase::Runtime;
+            if let Some(details) = &mut self.phase_details {
+                if let Some(deploy_details) = &details.deploy_details {
+                    self.state = ReleaseState::Deployed {
+                        environment: deploy_details.environment.clone(),
+                        deployment_time: Utc::now(),
+                    };
+                } else {
+                    return Err("Deployment details missing.".to_string());
+                }
+            } else {
+                return Err("Phase details missing.".to_string());
+            }
+            Ok(())
+        } else {
+            Err("Cannot complete deployment in the current phase and state.".to_string())
+        }
+    }
+
+    /// Revokes the release.
+    pub fn revoke(&mut self, reason: String) -> Result<(), String> {
+        if matches!(self.state, ReleaseState::Deployed { .. }) {
+            self.state = ReleaseState::Revoked {
+                reason,
+                revocation_time: Utc::now(),
+            };
+            Ok(())
+        } else {
+            Err("Cannot revoke in the current state.".to_string())
+        }
+    }
+
+    /// Validates the current phase and state.
+    pub fn validate(&self) -> Result<(), String> {
+        match (&self.phase, &self.state) {
+            (SDLCPhase::Development, ReleaseState::Draft)
+            | (SDLCPhase::Development, ReleaseState::InProgress { .. }) => Ok(()),
+            (SDLCPhase::Source, ReleaseState::Draft)
+            | (SDLCPhase::Source, ReleaseState::InProgress { .. }) => Ok(()),
+            // Add other valid combinations as needed
+            _ => Err("Invalid phase and state combination.".to_string()),
+        }
+    }
+}
+
+/* 
 impl<Phase: SDLCPhase, State: ReleaseState> SDLCRelease<Phase, State> {
     pub fn new(component: SDLCComponent, version: String, created_by: String) -> Self {
         Self {
@@ -357,3 +608,4 @@ mod tests {
     // Add more tests as needed
 }
 
+*/

@@ -13,7 +13,7 @@ syntax = "proto3";
 package openapitools;
 
 
-message InProgress {
+message ReleaseStateOneOfInProgress {
 
   string started_at = 494349137;
 

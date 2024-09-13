@@ -410,6 +410,22 @@
           }
         ]
       },
+      "BuildDetails": {
+        "type": "object",
+        "required": [
+          "build_id",
+          "build_timestamp"
+        ],
+        "properties": {
+          "build_id": {
+            "type": "string"
+          },
+          "build_timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
       "ControlPlaneError": {
         "oneOf": [
           {
@@ -442,46 +458,109 @@
           }
         ]
       },
-      "Deployed": {
+      "DeployDetails": {
         "type": "object",
         "required": [
-          "deployment_time",
-          "environment",
-          "vulnerabilities"
+          "deployment_id",
+          "environment"
         ],
         "properties": {
-          "deployment_time": {
-            "type": "string",
-            "format": "date-time"
+          "deployment_id": {
+            "type": "string"
           },
           "environment": {
             "type": "string"
-          },
-          "vulnerabilities": {
+          }
+        }
+      },
+      "DevelopmentDetails": {
+        "type": "object",
+        "required": [
+          "feature_list"
+        ],
+        "properties": {
+          "feature_list": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Vulnerability"
+              "type": "string"
             }
           }
         }
       },
-      "Draft": {
-        "default": null,
-        "nullable": true
-      },
-      "InProgress": {
+      "PackageDetails": {
         "type": "object",
         "required": [
-          "started_by",
-          "started_at"
+          "artifact_hash",
+          "artifact_url"
         ],
         "properties": {
-          "started_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "started_by": {
+          "artifact_hash": {
             "type": "string"
+          },
+          "artifact_url": {
+            "type": "string"
+          }
+        }
+      },
+      "PhaseDetails": {
+        "type": "object",
+        "required": [
+          "custom_details"
+        ],
+        "properties": {
+          "build_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BuildDetails"
+              }
+            ],
+            "nullable": true
+          },
+          "custom_details": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            }
+          },
+          "deploy_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeployDetails"
+              }
+            ],
+            "nullable": true
+          },
+          "development_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DevelopmentDetails"
+              }
+            ],
+            "nullable": true
+          },
+          "package_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PackageDetails"
+              }
+            ],
+            "nullable": true
+          },
+          "runtime_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RuntimeDetails"
+              }
+            ],
+            "nullable": true
+          },
+          "source_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SourceDetails"
+              }
+            ],
+            "nullable": true
           }
         }
       },
@@ -518,34 +597,6 @@
             "items": {
               "$ref": "#/components/schemas/PolicyRule"
             }
-          }
-        }
-      },
-      "PolicyCheckFailed": {
-        "type": "object",
-        "required": [
-          "failed_at",
-          "reason"
-        ],
-        "properties": {
-          "failed_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "reason": {
-            "type": "string"
-          }
-        }
-      },
-      "PolicyCheckPending": {
-        "type": "object",
-        "required": [
-          "initiated_at"
-        ],
-        "properties": {
-          "initiated_at": {
-            "type": "string",
-            "format": "date-time"
           }
         }
       },
@@ -666,35 +717,168 @@
           }
         }
       },
-      "Releasable": {
-        "type": "object",
-        "required": [
-          "approved_at",
-          "approved_by"
-        ],
-        "properties": {
-          "approved_at": {
+      "ReleaseState": {
+        "oneOf": [
+          {
             "type": "string",
-            "format": "date-time"
+            "enum": [
+              "Draft"
+            ]
           },
-          "approved_by": {
-            "type": "string"
+          {
+            "type": "object",
+            "required": [
+              "InProgress"
+            ],
+            "properties": {
+              "InProgress": {
+                "type": "object",
+                "required": [
+                  "started_by",
+                  "started_at"
+                ],
+                "properties": {
+                  "started_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "started_by": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "Releasable"
+            ],
+            "properties": {
+              "Releasable": {
+                "type": "object",
+                "required": [
+                  "approved_by",
+                  "approved_at"
+                ],
+                "properties": {
+                  "approved_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "approved_by": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "Released"
+            ],
+            "properties": {
+              "Released": {
+                "type": "object",
+                "required": [
+                  "release_notes",
+                  "release_time"
+                ],
+                "properties": {
+                  "release_notes": {
+                    "type": "string"
+                  },
+                  "release_time": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "Deployed"
+            ],
+            "properties": {
+              "Deployed": {
+                "type": "object",
+                "required": [
+                  "environment",
+                  "deployment_time"
+                ],
+                "properties": {
+                  "deployment_time": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "environment": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "Revoked"
+            ],
+            "properties": {
+              "Revoked": {
+                "type": "object",
+                "required": [
+                  "reason",
+                  "revocation_time"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  },
+                  "revocation_time": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "Custom"
+            ],
+            "properties": {
+              "Custom": {
+                "type": "string"
+              }
+            }
           }
-        }
+        ],
+        "description": "Represents the state of a release within a phase."
       },
-      "Released": {
+      "RuntimeDetails": {
         "type": "object",
         "required": [
-          "release_time",
-          "release_notes"
+          "runtime_id",
+          "last_heartbeat",
+          "vulnerabilities"
         ],
         "properties": {
-          "release_notes": {
-            "type": "string"
-          },
-          "release_time": {
+          "last_heartbeat": {
             "type": "string",
             "format": "date-time"
+          },
+          "runtime_id": {
+            "type": "string"
+          },
+          "vulnerabilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Vulnerability"
+            }
           }
         }
       },
@@ -724,6 +908,57 @@
           }
         ]
       },
+      "SDLCPhase": {
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": [
+              "Development"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "Source"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "Build"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "Package"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "Deploy"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "Runtime"
+            ]
+          },
+          {
+            "type": "object",
+            "required": [
+              "Custom"
+            ],
+            "properties": {
+              "Custom": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
       "SDLCRelease": {
         "type": "object",
         "required": [
@@ -734,7 +969,8 @@
           "created_at",
           "dependencies",
           "phase_attestations",
-          "state_info"
+          "state",
+          "phase"
         ],
         "properties": {
           "commit_hash": {
@@ -762,6 +998,9 @@
             "type": "string",
             "format": "uuid"
           },
+          "phase": {
+            "$ref": "#/components/schemas/SDLCPhase"
+          },
           "phase_attestations": {
             "type": "object",
             "additionalProperties": {
@@ -769,7 +1008,15 @@
               "format": "uuid"
             }
           },
-          "state_info": {
+          "phase_details": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PhaseDetails"
+              }
+            ],
+            "nullable": true
+          },
+          "state": {
             "type": "object"
           },
           "version": {
@@ -788,6 +1035,17 @@
             "type": "string"
           },
           "signer": {
+            "type": "string"
+          }
+        }
+      },
+      "SourceDetails": {
+        "type": "object",
+        "required": [
+          "commit_hash"
+        ],
+        "properties": {
+          "commit_hash": {
             "type": "string"
           }
         }

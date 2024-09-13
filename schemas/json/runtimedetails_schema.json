@@ -4,7 +4,8 @@
   "type": "object",
   "required": [
     "last_heartbeat",
-    "runtime_id"
+    "runtime_id",
+    "vulnerabilities"
   ],
   "properties": {
     "last_heartbeat": {
@@ -13,6 +14,47 @@
     },
     "runtime_id": {
       "type": "string"
+    },
+    "vulnerabilities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Vulnerability"
+      }
+    }
+  },
+  "definitions": {
+    "Vulnerability": {
+      "type": "object",
+      "required": [
+        "description",
+        "discovered_at",
+        "id",
+        "severity"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "discovered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/definitions/VulnerabilityLevel"
+        }
+      }
+    },
+    "VulnerabilityLevel": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ]
     }
   }
 }

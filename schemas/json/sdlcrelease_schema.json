@@ -1,0 +1,545 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SDLCRelease",
+  "type": "object",
+  "required": [
+    "component",
+    "created_at",
+    "created_by",
+    "dependencies",
+    "id",
+    "phase",
+    "phase_attestations",
+    "state",
+    "version"
+  ],
+  "properties": {
+    "commit_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "component": {
+      "$ref": "#/definitions/SDLCComponent"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "phase": {
+      "$ref": "#/definitions/SDLCPhase"
+    },
+    "phase_attestations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "phase_details": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PhaseDetails"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "state": {
+      "$ref": "#/definitions/ReleaseState"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "BuildDetails": {
+      "type": "object",
+      "required": [
+        "build_id",
+        "build_timestamp"
+      ],
+      "properties": {
+        "build_id": {
+          "type": "string"
+        },
+        "build_timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "DeployDetails": {
+      "type": "object",
+      "required": [
+        "deployment_id",
+        "environment"
+      ],
+      "properties": {
+        "deployment_id": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        }
+      }
+    },
+    "DevelopmentDetails": {
+      "type": "object",
+      "required": [
+        "feature_list"
+      ],
+      "properties": {
+        "feature_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PackageDetails": {
+      "type": "object",
+      "required": [
+        "artifact_hash",
+        "artifact_url"
+      ],
+      "properties": {
+        "artifact_hash": {
+          "type": "string"
+        },
+        "artifact_url": {
+          "type": "string"
+        }
+      }
+    },
+    "PhaseDetails": {
+      "type": "object",
+      "required": [
+        "custom_details"
+      ],
+      "properties": {
+        "build_details": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/BuildDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "custom_details": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "deploy_details": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DeployDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "development_details": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DevelopmentDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "package_details": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PackageDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runtime_details": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RuntimeDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_details": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SourceDetails"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Project": {
+      "type": "object",
+      "required": [
+        "components",
+        "id",
+        "name"
+      ],
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SDLCComponent"
+          }
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "repository_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ReleaseState": {
+      "description": "Represents the state of a release within a phase.",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Draft"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "InProgress"
+          ],
+          "properties": {
+            "InProgress": {
+              "type": "object",
+              "required": [
+                "started_at",
+                "started_by"
+              ],
+              "properties": {
+                "started_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "started_by": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Releasable"
+          ],
+          "properties": {
+            "Releasable": {
+              "type": "object",
+              "required": [
+                "approved_at",
+                "approved_by"
+              ],
+              "properties": {
+                "approved_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "approved_by": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Released"
+          ],
+          "properties": {
+            "Released": {
+              "type": "object",
+              "required": [
+                "release_notes",
+                "release_time"
+              ],
+              "properties": {
+                "release_notes": {
+                  "type": "string"
+                },
+                "release_time": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Deployed"
+          ],
+          "properties": {
+            "Deployed": {
+              "type": "object",
+              "required": [
+                "deployment_time",
+                "environment"
+              ],
+              "properties": {
+                "deployment_time": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "environment": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Revoked"
+          ],
+          "properties": {
+            "Revoked": {
+              "type": "object",
+              "required": [
+                "reason",
+                "revocation_time"
+              ],
+              "properties": {
+                "reason": {
+                  "type": "string"
+                },
+                "revocation_time": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Custom"
+          ],
+          "properties": {
+            "Custom": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RuntimeDetails": {
+      "type": "object",
+      "required": [
+        "last_heartbeat",
+        "runtime_id",
+        "vulnerabilities"
+      ],
+      "properties": {
+        "last_heartbeat": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "runtime_id": {
+          "type": "string"
+        },
+        "vulnerabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Vulnerability"
+          }
+        }
+      }
+    },
+    "SDLCComponent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "Project"
+          ],
+          "properties": {
+            "Project": {
+              "$ref": "#/definitions/Project"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "Unmanaged"
+          ],
+          "properties": {
+            "Unmanaged": {
+              "$ref": "#/definitions/Unmanaged"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SDLCPhase": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "Development",
+            "Source",
+            "Build",
+            "Package",
+            "Deploy",
+            "Runtime"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "Custom"
+          ],
+          "properties": {
+            "Custom": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SourceDetails": {
+      "type": "object",
+      "required": [
+        "commit_hash"
+      ],
+      "properties": {
+        "commit_hash": {
+          "type": "string"
+        }
+      }
+    },
+    "Unmanaged": {
+      "type": "object",
+      "required": [
+        "id",
+        "metadata",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "package_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "repository_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "Vulnerability": {
+      "type": "object",
+      "required": [
+        "description",
+        "discovered_at",
+        "id",
+        "severity"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "discovered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "id": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/definitions/VulnerabilityLevel"
+        }
+      }
+    },
+    "VulnerabilityLevel": {
+      "type": "string",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ]
+    }
+  }
+}

@@ -12,14 +12,10 @@ syntax = "proto3";
 
 package openapitools;
 
-import public "models/vulnerability.proto";
+import public "models/release_state_one_of5.proto";
 
-message Deployed {
+message SDLCPhase {
 
-  string deployment_time = 396706826;
-
-  string environment = 85904877;
-
-  repeated Vulnerability vulnerabilities = 484685341;
+  string Custom = 419133332;
 
 }

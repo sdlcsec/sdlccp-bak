@@ -1,5 +1,4 @@
 use schemars::schema_for;
-use sdlc_cp_api::model::*;
 use std::fs::File;
 use std::io::Write;
 use std::process::Command;
@@ -9,6 +8,15 @@ use utoipa::OpenApi;
 // TODO: Make a lot of this parameterized instead of hardcoded for the paths.
 
 fn main() -> std::io::Result<()> {
+    // Remove all json schemas so if we remove stuff from the models, we don't have to worry about stale schemas.
+    let json_schema_dir = std::path::Path::new("../schemas/json");
+    for entry in std::fs::read_dir(json_schema_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            std::fs::remove_file(path)?;
+        }
+    }
     // TODO: Ideally this should be a handful of large json schemas, not one per type.
     for schema_gen in inventory::iter::<SchemaGenerator> {
         let schema = (schema_gen.generator)();
@@ -18,22 +26,6 @@ fn main() -> std::io::Result<()> {
         schema_file.write_all(schema_string.as_bytes())?;
         println!("Generated schema for {} in {}", schema_gen.type_name, filename);
     }
-    // FIXME: This is a workaround. I can't seem to figure out how to get the generic to work with the macro.
-    generate_schema_no_macro::<SDLCRelease<phase::Development, state::Draft>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Development, state::PolicyCheckPending>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Development, state::PolicyCheckFailed>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Source, state::Draft>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Source, state::PolicyCheckPending>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Source, state::PolicyCheckFailed>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Build, state::Draft>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Build, state::PolicyCheckPending>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Build, state::PolicyCheckFailed>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Package, state::Draft>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Package, state::PolicyCheckPending>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Package, state::PolicyCheckFailed>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Deploy, state::Draft>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Deploy, state::PolicyCheckPending>>()?;
-    generate_schema_no_macro::<SDLCRelease<phase::Deploy, state::PolicyCheckFailed>>()?;
     
     generate_openapi()?;
     generate_protobufs()?;
@@ -41,7 +33,7 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-fn generate_schema_no_macro<T: schemars::JsonSchema>() -> std::io::Result<()> {
+fn _generate_schema_no_macro<T: schemars::JsonSchema>() -> std::io::Result<()> {
     let schema = schema_for!(T);
     let filename = format!("../schemas/json/{}_schema.json", std::any::type_name::<T>().to_lowercase().replace("::", "_"));
     let mut schema_file = File::create(&filename)?;

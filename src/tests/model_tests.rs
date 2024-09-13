@@ -1,14 +1,14 @@
 use crate::model::*;
-use attestation::{Subject, SubjectType};
-use chrono::{Duration as ChronoDuration, Utc};
-use policy::{Policy, PolicyRule, VulnerabilityLevel};
+use attestation::{Attestation, Subject, SubjectType};
+use chrono::Utc;
+use phase::{PhaseDetails, RuntimeDetails};
+use policy::{Policy, PolicyRule, Vulnerability, VulnerabilityLevel};
 use sdlc_component::{Project, SDLCComponent, Unmanaged};
-use state::Vulnerability;
 use std::collections::HashMap;
 use uuid::Uuid;
 
 #[test]
-fn test_sdlc_release_lifecycle_project() {
+fn test_sdlc_release_lifecycle() {
     let project = Project {
         id: Uuid::new_v4(),
         name: "Test Project".to_string(),
@@ -19,97 +19,80 @@ fn test_sdlc_release_lifecycle_project() {
     let component = SDLCComponent::Project(project);
     
     // Initialize a new release
-    let release = SDLCRelease::<phase::Development, state::Draft>::new(
+    let mut release = SDLCRelease::new(
         component,
         "1.0.0".to_string(),
         "developer1".to_string()
     );
 
-    assert_eq!(release.phase_name(), "Development");
-    assert_eq!(release.state_name(), "Draft");
+    assert_eq!(release.phase, SDLCPhase::Development);
+    assert_eq!(release.state, ReleaseState::Draft);
     assert_eq!(release.created_by, "developer1");
     assert_eq!(release.component_name(), "Test Project");
-    assert_eq!(release.component_type(), "Project");
 
     // Start development
-    let release = release.start_development("developer2".to_string());
-    assert_eq!(release.phase_name(), "Development");
-    assert_eq!(release.state_name(), "InProgress");
-    assert_eq!(release.state_info.started_by, "developer2");
+    release.start_development("developer2".to_string(), vec!["feature x".to_string(), "feature y".to_string()]).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Development);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
+    if let ReleaseState::InProgress { started_by, .. } = &release.state {
+        assert_eq!(started_by, "developer2");
+    }
 
     // Complete development
-    let release = release.complete_development(phase::DevelopmentDetails {});
-    assert_eq!(release.phase_name(), "Source");
-    assert_eq!(release.state_name(), "Draft");
+    release.complete_development().unwrap();
+    assert_eq!(release.phase, SDLCPhase::Source);
+    assert!(matches!(release.state, ReleaseState::Draft));
 
     // Start source review
-    let release = release.start_source_review("reviewer1".to_string());
-    assert_eq!(release.phase_name(), "Source");
-    assert_eq!(release.state_name(), "InProgress");
-    assert_eq!(release.state_info.started_by, "reviewer1");
+    release.start_source_review("reviewer1".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Source);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
 
     // Complete source review
-    let release = release.complete_source_review(phase::SourceDetails {
-        commit_hash: "abcdef123456".to_string(),
-    });
-    assert_eq!(release.phase_name(), "Build");
-    assert_eq!(release.state_name(), "Draft");
+    release.complete_source_review("abcdef123456".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Build);
+    assert!(matches!(release.state, ReleaseState::Draft));
     assert_eq!(release.commit_hash, Some("abcdef123456".to_string()));
 
     // Start build
-    let release = release.start_build("builder1".to_string());
-    assert_eq!(release.phase_name(), "Build");
-    assert_eq!(release.state_name(), "InProgress");
-    assert_eq!(release.state_info.started_by, "builder1");
+    release.start_build("builder1".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Build);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
 
     // Complete build
-    let release = release.complete_build(phase::BuildDetails {
-        build_id: "build123".to_string(),
-        build_timestamp: Utc::now(),
-    });
-    assert_eq!(release.phase_name(), "Package");
-    assert_eq!(release.state_name(), "Draft");
+    release.complete_build("build123".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Package);
+    assert!(matches!(release.state, ReleaseState::Draft));
 
     // Start packaging
-    let release = release.start_packaging("packager1".to_string());
-    assert_eq!(release.phase_name(), "Package");
-    assert_eq!(release.state_name(), "InProgress");
-    assert_eq!(release.state_info.started_by, "packager1");
+    release.start_packaging("packager1".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Package);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
 
     // Complete packaging
-    let release = release.complete_packaging(phase::PackageDetails {
-        artifact_hash: "123abc456def".to_string(),
-        artifact_url: "https://example.com/artifacts/project1-1.0.0.tar.gz".to_string(),
-    });
-    assert_eq!(release.phase_name(), "Package");
-    assert_eq!(release.state_name(), "Releasable");
+    release.complete_packaging("123abc456def".to_string(), "https://example.com/artifacts/project1-1.0.0.tar.gz".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Deploy);
+    assert!(matches!(release.state, ReleaseState::Releasable { .. }));
 
     // Release
-    let release = release.release("Version 1.0.0 release notes".to_string());
-    assert_eq!(release.phase_name(), "Deploy");
-    assert_eq!(release.state_name(), "Released");
-    assert_eq!(release.state_info.release_notes, "Version 1.0.0 release notes");
+    release.release("Version 1.0.0 release notes".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Deploy);
+    assert!(matches!(release.state, ReleaseState::Released { .. }));
 
     // Start deployment
-    let release = release.start_deployment("production".to_string());
-    assert_eq!(release.phase_name(), "Deploy");
-    assert_eq!(release.state_name(), "InProgress");
-    assert_eq!(release.state_info.started_by, "production");
+    release.start_deployment("production".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Deploy);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
 
     // Complete deployment
-    let release = release.complete_deployment(phase::DeployDetails {
-        deployment_id: "deploy123".to_string(),
-        environment: "production".to_string(),
-    });
-    assert_eq!(release.phase_name(), "Runtime");
-    assert_eq!(release.state_name(), "Deployed");
-    assert_eq!(release.state_info.environment, "production");
+    release.complete_deployment().unwrap();
+    assert_eq!(release.phase, SDLCPhase::Runtime);
+    assert!(matches!(release.state, ReleaseState::Deployed { .. }));
 
     // Revoke
-    let release = release.revoke("Critical bug found".to_string());
-    assert_eq!(release.phase_name(), "Runtime");
-    assert_eq!(release.state_name(), "Revoked");
-    assert_eq!(release.state_info.reason, "Critical bug found");
+    release.revoke("Critical bug found".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Runtime);
+    assert!(matches!(release.state, ReleaseState::Revoked { .. }));
 }
 
 #[test]
@@ -124,83 +107,53 @@ fn test_sdlc_release_lifecycle_unmanaged() {
     let component = SDLCComponent::Unmanaged(unmanaged);
     
     // Initialize a new release
-    let release = SDLCRelease::<phase::Development, state::Draft>::new(
+    let mut release = SDLCRelease::new(
         component,
         "1.0.0".to_string(),
         "integrator1".to_string()
     );
 
-    assert_eq!(release.phase_name(), "Development");
-    assert_eq!(release.state_name(), "Draft");
+    assert_eq!(release.phase, SDLCPhase::Development);
+    assert_eq!(release.state, ReleaseState::Draft);
     assert_eq!(release.created_by, "integrator1");
     assert_eq!(release.component_name(), "Unmanaged Component");
-    assert_eq!(release.component_type(), "Unmanaged");
 
     // For unmanaged components, we might skip some phases or handle them differently
     // Here's an example of a simplified lifecycle:
 
     // Start integration (using development phase)
-    let release = release.start_development("integrator2".to_string());
-    assert_eq!(release.phase_name(), "Development");
-    assert_eq!(release.state_name(), "InProgress");
-    assert_eq!(release.state_info.started_by, "integrator2");
+    release.start_development("integrator2".to_string(), vec!["feature 1".to_string(), "feature 2".to_string()]).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Development);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
 
     // Complete integration
-    let release = release.complete_development(phase::DevelopmentDetails {});
-    assert_eq!(release.phase_name(), "Source");
-    assert_eq!(release.state_name(), "Draft");
+    release.complete_development().unwrap();
+    assert_eq!(release.phase, SDLCPhase::Source);
+    assert!(matches!(release.state, ReleaseState::Draft));
 
     // Skip source review for unmanaged component
-    let release = SDLCRelease::<phase::Build, state::Draft> {
-        id: release.id,
-        component: release.component,
-        version: release.version,
-        created_by: release.created_by,
-        created_at: release.created_at,
-        commit_hash: release.commit_hash,
-        dependencies: release.dependencies,
-        phase_attestations: release.phase_attestations,
-        state_info: state::Draft::new(),
-        _phase: std::marker::PhantomData,
-    };
+    release.phase = SDLCPhase::Build;
+    release.state = ReleaseState::Draft;
 
     // Start build (which might be just a verification process for unmanaged components)
-    let release = release.start_build("verifier1".to_string());
-    assert_eq!(release.phase_name(), "Build");
-    assert_eq!(release.state_name(), "InProgress");
-    assert_eq!(release.state_info.started_by, "verifier1");
+    release.start_build("verifier1".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Build);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
 
     // Complete build/verification
-    let release = release.complete_build(phase::BuildDetails {
-        build_id: "verify123".to_string(),
-        build_timestamp: Utc::now(),
-    });
-    assert_eq!(release.phase_name(), "Package");
-    assert_eq!(release.state_name(), "Draft");
+    release.complete_build("verify123".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Package);
+    assert!(matches!(release.state, ReleaseState::Draft));
 
     // For unmanaged components, packaging might be skipped as it's already packaged
     // Move directly to Releasable state
-    let release = SDLCRelease::<phase::Package, state::Releasable> {
-        id: release.id,
-        component: release.component,
-        version: release.version,
-        created_by: release.created_by,
-        created_at: release.created_at,
-        commit_hash: release.commit_hash,
-        dependencies: release.dependencies,
-        phase_attestations: release.phase_attestations,
-        state_info: state::Releasable::new(),
-        _phase: std::marker::PhantomData,
-    };
-
-    assert_eq!(release.phase_name(), "Package");
-    assert_eq!(release.state_name(), "Releasable");
+    release.phase = SDLCPhase::Package;
+    release.state = ReleaseState::Releasable { approved_by: "Auto-Approved".to_string(), approved_at: Utc::now() };
 
     // Release
-    let release = release.release("Unmanaged Component 1.0.0 integrated".to_string());
-    assert_eq!(release.phase_name(), "Deploy");
-    assert_eq!(release.state_name(), "Released");
-    assert_eq!(release.state_info.release_notes, "Unmanaged Component 1.0.0 integrated");
+    release.release("Unmanaged Component 1.0.0 integrated".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Deploy);
+    assert!(matches!(release.state, ReleaseState::Released { .. }));
 
     // Deployment and runtime phases would proceed as normal
     // ...
@@ -246,11 +199,15 @@ fn test_vulnerability_detection() {
     };
     let component = SDLCComponent::Unmanaged(unmanaged);
     
-    let release = SDLCRelease::<phase::Runtime, state::Deployed>::new(
+    let mut release = SDLCRelease::new(
         component,
         "1.0.0".to_string(),
         "integrator1".to_string()
     );
+
+    // Set the release to Runtime phase and Deployed state
+    release.phase = SDLCPhase::Runtime;
+    release.state = ReleaseState::Deployed { environment: "production".to_string(), deployment_time: Utc::now() };
 
     // Create a policy
     let mut policy = Policy::new("Runtime Policy".to_string(), vec!["Runtime".to_string()]);
@@ -284,7 +241,7 @@ fn check_policy(policy: &Policy, attestation: &Attestation) -> bool {
             },
             PolicyRule::MaxAge(max_age) => {
                 let age = Utc::now() - attestation.timestamp;
-                age <= ChronoDuration::from_std(*max_age).unwrap_or_else(|_| ChronoDuration::zero())
+                age <= chrono::Duration::from_std(*max_age).unwrap_or_else(|_| chrono::Duration::zero())
             },
             // Add checks for other rule types as needed
             _ => true, // Assume other rules pass for now
@@ -292,22 +249,47 @@ fn check_policy(policy: &Policy, attestation: &Attestation) -> bool {
     })
 }
 
-fn check_runtime_policy(policy: &Policy, release: &SDLCRelease<phase::Runtime, state::Deployed>) -> bool {
-    policy.rules.iter().all(|rule| {
-        match rule {
-            PolicyRule::VulnerabilityThreshold(level, max_count) => {
-                let count = release.state_info.vulnerabilities.iter()
-                    .filter(|v| v.severity >= *level)
-                    .count();
-                count <= *max_count as usize
-            },
-            // Add checks for other rule types as needed
-            _ => true, // Assume other rules pass for now
-        }
-    })
+fn check_runtime_policy(policy: &Policy, release: &SDLCRelease) -> bool {
+    if let ReleaseState::Deployed { .. } = release.state {
+        policy.rules.iter().all(|rule| {
+            match rule {
+                PolicyRule::VulnerabilityThreshold(level, max_count) => {
+                    if let Some(PhaseDetails { runtime_details: Some(runtime_details), .. }) = &release.phase_details {
+                        let count = runtime_details.vulnerabilities.iter()
+                            .filter(|v| v.severity >= *level)
+                            .count();
+                        count <= *max_count as usize
+                    } else {
+                        true // No runtime details available, assume it passes
+                    }
+                },
+                // Add checks for other rule types as needed
+                _ => true, // Assume other rules pass for now
+            }
+        })
+    } else {
+        false // Release is not in Deployed state
+    }
 }
 
-fn update_release_vulnerabilities(mut release: SDLCRelease<phase::Runtime, state::Deployed>, vulnerabilities: Vec<Vulnerability>) -> SDLCRelease<phase::Runtime, state::Deployed> {
-    release.state_info.vulnerabilities.extend(vulnerabilities);
+fn update_release_vulnerabilities(mut release: SDLCRelease, vulnerabilities: Vec<Vulnerability>) -> SDLCRelease {
+    if let Some(PhaseDetails { runtime_details: Some(runtime_details), .. }) = &mut release.phase_details {
+        runtime_details.vulnerabilities.extend(vulnerabilities);
+    } else {
+        // If there are no runtime details, create them
+        release.phase_details = Some(PhaseDetails {
+            build_details: None, // or appropriate default value
+            custom_details: HashMap::new(), // or appropriate default value
+            deploy_details: None, // or appropriate default value
+            runtime_details: Some(RuntimeDetails {
+                runtime_id: Uuid::new_v4().to_string(),
+                last_heartbeat: Utc::now(),
+                vulnerabilities,
+            }),
+            development_details: None,
+            source_details: None,
+            package_details: None,
+        });
+    }
     release
 }

@@ -1,6 +1,7 @@
 use std::time::Duration;
 use std::collections::HashMap;
 
+use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
 use sdlc_cp_api_macro::RegisterSchema;
 use serde::{Deserialize, Serialize};
@@ -45,4 +46,12 @@ impl Policy {
     pub fn add_rule(&mut self, rule: PolicyRule) {
         self.rules.push(rule);
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, RegisterSchema, ToSchema)]
+pub struct Vulnerability {
+    pub id: String,
+    pub severity: VulnerabilityLevel,
+    pub description: String,
+    pub discovered_at: DateTime<Utc>,
 }

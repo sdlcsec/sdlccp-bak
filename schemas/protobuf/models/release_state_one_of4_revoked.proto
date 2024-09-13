@@ -13,10 +13,10 @@ syntax = "proto3";
 package openapitools;
 
 
-message PolicyCheckFailed {
-
-  string failed_at = 535947403;
+message ReleaseStateOneOf4Revoked {
 
   string reason = 398093757;
+
+  string revocation_time = 104731342;
 
 }

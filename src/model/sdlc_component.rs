@@ -29,3 +29,12 @@ pub struct Project {
     pub owner: Option<String>,
     pub components: Vec<SDLCComponent>,
 }
+
+impl SDLCComponent {
+    pub fn name(&self) -> &str {
+        match self {
+            SDLCComponent::Project(p) => p.name.as_str(),
+            SDLCComponent::Unmanaged(u) => u.name.as_str(),
+        }
+    }
+}

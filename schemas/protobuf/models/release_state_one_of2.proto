@@ -12,9 +12,10 @@ syntax = "proto3";
 
 package openapitools;
 
+import public "models/release_state_one_of2_released.proto";
 
-message PolicyCheckPending {
+message ReleaseStateOneOf2 {
 
-  string initiated_at = 175406073;
+  ReleaseStateOneOf2Released Released = 486654627;
 
 }

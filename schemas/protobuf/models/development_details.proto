@@ -13,10 +13,8 @@ syntax = "proto3";
 package openapitools;
 
 
-message Released {
+message DevelopmentDetails {
 
-  string release_notes = 265455480;
-
-  string release_time = 354758654;
+  repeated string feature_list = 135223369;
 
 }

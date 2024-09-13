@@ -12,11 +12,10 @@ syntax = "proto3";
 
 package openapitools;
 
+import public "models/release_state_one_of1_releasable.proto";
 
-message Releasable {
+message ReleaseStateOneOf1 {
 
-  string approved_at = 166558396;
-
-  string approved_by = 166558432;
+  ReleaseStateOneOf1Releasable Releasable = 476221080;
 
 }
