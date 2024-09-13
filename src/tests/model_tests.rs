@@ -131,23 +131,19 @@ fn test_sdlc_release_lifecycle_unmanaged() {
     assert_eq!(release.phase, SDLCPhase::Source);
     assert!(matches!(release.state, ReleaseState::Draft));
 
-    // Skip source review for unmanaged component
-    release.phase = SDLCPhase::Build;
-    release.state = ReleaseState::Draft;
-
-    // Start build (which might be just a verification process for unmanaged components)
-    release.start_build("verifier1".to_string()).unwrap();
-    assert_eq!(release.phase, SDLCPhase::Build);
+    // Start source review (which might be just a verification process for unmanaged components)
+    release.start_source_review("verifier1".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Source);
     assert!(matches!(release.state, ReleaseState::InProgress { .. }));
 
-    // Complete build/verification
-    release.complete_build("verify123".to_string()).unwrap();
-    assert_eq!(release.phase, SDLCPhase::Package);
+    // Complete source review
+    release.complete_source_review("verify123".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Build);
     assert!(matches!(release.state, ReleaseState::Draft));
 
-    // For unmanaged components, packaging might be skipped as it's already packaged
-    // Move directly to Releasable state
-    release.phase = SDLCPhase::Package;
+    // For unmanaged components, build and packaging might be skipped
+    // Move directly to Deploy phase
+    release.phase = SDLCPhase::Deploy;
     release.state = ReleaseState::Releasable { approved_by: "Auto-Approved".to_string(), approved_at: Utc::now() };
 
     // Release
@@ -155,8 +151,15 @@ fn test_sdlc_release_lifecycle_unmanaged() {
     assert_eq!(release.phase, SDLCPhase::Deploy);
     assert!(matches!(release.state, ReleaseState::Released { .. }));
 
-    // Deployment and runtime phases would proceed as normal
-    // ...
+    // Start deployment
+    release.start_deployment("production".to_string()).unwrap();
+    assert_eq!(release.phase, SDLCPhase::Deploy);
+    assert!(matches!(release.state, ReleaseState::InProgress { .. }));
+
+    // Complete deployment
+    release.complete_deployment().unwrap();
+    assert_eq!(release.phase, SDLCPhase::Runtime);
+    assert!(matches!(release.state, ReleaseState::Deployed { .. }));
 }
 
 #[test]
