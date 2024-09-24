@@ -1,5 +1,6 @@
 README.md
 models/attestation.proto
+models/attestation_create_request.proto
 models/attestation_error.proto
 models/attestation_error_one_of.proto
 models/attestation_error_one_of1.proto

@@ -1,5 +1,5 @@
 [package]
-name = "sdlc-cp-api-macro"
+name = "sdlccp-api-macro"
 version = "0.1.0"
 edition = "2021"
 

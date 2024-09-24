@@ -3,7 +3,7 @@ use super::phase::{BuildDetails, DeployDetails, DevelopmentDetails, PackageDetai
 use super::state::ReleaseState;
 use chrono::{DateTime, Utc};
 use schemars::JsonSchema;
-use sdlc_cp_api_macro::RegisterSchema;
+use sdlccp_api_macro::RegisterSchema;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use std::collections::HashMap;

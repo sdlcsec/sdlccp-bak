@@ -12,11 +12,10 @@ syntax = "proto3";
 
 package openapitools;
 
-import public "models/sdlc_component.proto";
 
 message Project {
 
-  repeated SDLCComponent components = 447446250;
+  repeated string components = 447446250;
 
   string id = 3355;
 

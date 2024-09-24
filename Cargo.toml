@@ -1,5 +1,5 @@
 [package]
-name = "sdlc-cp-api"
+name = "sdlccp"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,12 +7,13 @@ edition = "2021"
 async-trait = "0.1.82"
 chrono = { version = "0.4.38", features = ["serde"] }
 schemars = { version = "0.8.21", features = ["chrono", "url", "uuid", "uuid1"] }
-serde = { version = "1.0.209", features = ["derive"] }
+serde = { version = "1.0.209", features = ["derive", "rc"] }
 serde_json = "1.0.128"
 thiserror = "1.0.63"
 tokio = { version = "1.40.0", features = ["sync"] }
-uuid = { version = "1.10.0", features = ["serde", "v4"] }
-sdlc-cp-api-macro = { path = "./sdlc-cp-api-macro" }
+uuid = { version = "1.10.0", features = ["serde", "v4", "v7"] }
+sdlccp-api-macro = { path = "./sdlccp-api-macro" }
 inventory = "0.3.15"
 utoipa = { version = "4.2.3", features = ["ulid", "axum_extras", "url", "chrono", "uuid"] }
 axum = "0.7.5"
+packageurl = { version = "0.4.1", features = ["serde"] }

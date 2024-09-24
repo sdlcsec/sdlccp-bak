@@ -373,6 +373,41 @@
           }
         }
       },
+      "AttestationCreateRequest": {
+        "type": "object",
+        "required": [
+          "subject",
+          "signatures",
+          "claims",
+          "parent_attestations"
+        ],
+        "properties": {
+          "claims": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "expiration": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "parent_attestations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Signature"
+            }
+          },
+          "subject": {
+            "$ref": "#/components/schemas/Subject"
+          }
+        }
+      },
       "AttestationError": {
         "oneOf": [
           {
@@ -697,7 +732,8 @@
           "components": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SDLCComponent"
+              "type": "string",
+              "format": "uuid"
             }
           },
           "id": {

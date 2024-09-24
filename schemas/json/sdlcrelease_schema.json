@@ -212,7 +212,8 @@
         "components": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SDLCComponent"
+            "type": "string",
+            "format": "uuid"
           }
         },
         "id": {

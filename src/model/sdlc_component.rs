@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use schemars::JsonSchema;
-use sdlc_cp_api_macro::RegisterSchema;
+use sdlccp_api_macro::RegisterSchema;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -27,7 +27,7 @@ pub struct Project {
     pub name: String,
     pub repository_url: Option<String>,
     pub owner: Option<String>,
-    pub components: Vec<SDLCComponent>,
+    pub components: Vec<Uuid>, // References to other SDLCComponents
 }
 
 impl SDLCComponent {

@@ -1,7 +1,7 @@
 pub mod model;
 pub mod services;
 
-pub use sdlc_cp_api_macro::RegisterSchema;
+pub use sdlccp_api_macro::RegisterSchema;
 
 pub struct SchemaGenerator {
     pub type_name: &'static str,

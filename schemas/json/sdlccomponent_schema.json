@@ -39,7 +39,8 @@
         "components": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SDLCComponent"
+            "type": "string",
+            "format": "uuid"
           }
         },
         "id": {
@@ -62,34 +63,6 @@
           ]
         }
       }
-    },
-    "SDLCComponent": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "Project"
-          ],
-          "properties": {
-            "Project": {
-              "$ref": "#/definitions/Project"
-            }
-          },
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "required": [
-            "Unmanaged"
-          ],
-          "properties": {
-            "Unmanaged": {
-              "$ref": "#/definitions/Unmanaged"
-            }
-          },
-          "additionalProperties": false
-        }
-      ]
     },
     "Unmanaged": {
       "type": "object",
